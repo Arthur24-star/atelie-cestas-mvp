@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ateliê de Cestas | Novo pedido</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<main class="app-shell">
+  <header class="hero">
+    <p class="eyebrow">ATELIÊ DE CESTAS</p>
+    <h1>Monte seu pedido</h1>
+    <p>Selecione os itens, informe os dados e confira o resumo.</p>
+  </header>
+  {% if error %}<div class="alert error" role="alert">⚠ {{ error }}</div>{% endif %}
+  <form action="/orders" method="post" id="order-form">
+    <section class="panel" aria-labelledby="catalog-title">
+      <div class="section-heading"><span>01</span><div><h2 id="catalog-title">Catálogo de insumos</h2><p>Selecione um ou mais itens.</p></div></div>
+      <div class="products">
+      {% for product in products %}
+        <label class="product">
+          <input type="checkbox" name="selected_items" value="{{ product.id }}" data-price="{{ '%.2f'|format(product.price) }}">
+          <span class="product-copy"><strong>{{ product.name }}</strong><small>Insumo para montagem da cesta</small></span>
+          <span class="price">R$ {{ '%.2f'|format(product.price) }}</span>
+        </label>
+      {% endfor %}
+      </div>
+      <div class="subtotal"><span>Subtotal</span><strong id="subtotal">R$ 0,00</strong></div>
+    </section>
+    <section class="panel" aria-labelledby="schedule-title">
+      <div class="section-heading"><span>02</span><div><h2 id="schedule-title">Agendamento do pedido</h2><p>Informe os dados para entrega.</p></div></div>
+      <label class="field">Nome completo<input name="customer_name" maxlength="120" required placeholder="Nome do cliente"></label>
+      <label class="field">WhatsApp para contato<input name="whatsapp" type="tel" maxlength="30" required placeholder="(31) 99999-9999"></label>
+      <label class="field">Data de entrega<input name="delivery_date" type="date" min="{{ min_delivery }}" required></label>
+    </section>
+    <div class="submit-area"><button type="submit" class="primary">Calcular e gerar resumo do pedido</button></div>
+  </form>
+  <p class="footnote">MVP acadêmico em desenvolvimento. Confira os dados antes de enviar.</p>
+</main>
+<script src="/static/app.js"></script>
+</body>
+</html>

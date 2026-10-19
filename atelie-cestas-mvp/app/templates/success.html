@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resumo do pedido | Ateliê de Cestas</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<main class="app-shell">
+  <header class="hero"><p class="eyebrow">ATELIÊ DE CESTAS</p><h1>Resumo do pedido</h1><p>Confira antes de confirmar pelo WhatsApp.</p></header>
+  <div class="alert success" role="status"><span aria-hidden="true">✓</span> Pedido montado com sucesso. Ainda falta enviá-lo pelo WhatsApp.</div>
+  <section class="panel">
+    <h2>Pedido #{{ order_id }}</h2>
+    <p><strong>Cliente:</strong> {{ customer_name }}</p><p><strong>Contato:</strong> {{ whatsapp }}</p>
+    <p><strong>Entrega:</strong> {{ delivery_date }}</p><hr>
+    <ul>{% for item in chosen %}<li>{{ item.name }} — R$ {{ '%.2f'|format(item.price) }}</li>{% endfor %}</ul>
+    <div class="subtotal"><span>Total final</span><strong>R$ {{ total }}</strong></div>
+  </section>
+  <section class="panel message-preview"><h2>Prévia da mensagem</h2><p>{{ message }}</p></section>
+  <a class="primary button-link" href="{{ whatsapp_url }}" target="_blank" rel="noopener noreferrer">Enviar pedido via WhatsApp</a>
+  <a class="secondary-link" href="/">Voltar e montar outro pedido</a>
+</main>
+</body>
+</html>
