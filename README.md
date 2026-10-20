@@ -27,3 +27,16 @@ Projeto desenvolvido como parte da disciplina Projeto de Software, no curso de A
 ## Status
 
 Em desenvolvimento.
+
+
+## Revisão técnica e decisões de implementação
+
+O fluxo de criação de pedidos foi revisado considerando validação de dados, consistência dos valores e persistência no banco de dados.
+
+- **Validação de entrada:** o sistema verifica o nome do cliente, o WhatsApp, a seleção de produtos e a data de entrega.
+- **Integridade dos produtos:** os itens selecionados são filtrados para considerar apenas identificadores existentes no catálogo.
+- **Cálculo do pedido:** o total é calculado a partir dos preços definidos no catálogo, com arredondamento para duas casas decimais.
+- **Persistência:** após a validação, o pedido é registrado no banco de dados e seu identificador é recuperado para exibição da confirmação.
+- **Experiência do usuário:** mensagens de validação orientam o preenchimento correto do formulário.
+
+Esta revisão documenta as decisões técnicas existentes no MVP e serve como base para futuras melhorias e testes automatizados.
