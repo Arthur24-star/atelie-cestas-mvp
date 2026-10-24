@@ -1,0 +1,222 @@
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pedido registrado | Ateliê de Cestas</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+<main class="app-shell">
+
+  <header class="hero">
+    <p class="eyebrow">ATELIÊ DE CESTAS</p>
+    <h1>Pedido registrado com sucesso!</h1>
+    <p>
+      Confira os dados do pedido e encaminhe o resumo pelo WhatsApp
+      para conversar com o ateliê e confirmar os detalhes da entrega.
+    </p>
+  </header>
+
+  <!-- CONFIRMAÇÃO DO PEDIDO -->
+  <section class="panel">
+    <div class="alert success" role="status">
+      Seu pedido foi registrado com o número #{{ order_id }}.
+    </div>
+
+    <h2>Resumo do pedido</h2>
+
+    <p>
+      <strong>Número do pedido:</strong> #{{ order_id }}
+    </p>
+
+    <p>
+      <strong>Quem está fazendo o pedido:</strong>
+      {{ customer_name }}
+    </p>
+
+    <p>
+      <strong>WhatsApp de contato:</strong> {{ whatsapp }}
+    </p>
+
+    <hr>
+
+    <h2>Quem vai receber a cesta</h2>
+
+    <p>
+      <strong>Nome do destinatário:</strong>
+      {{ recipient_name }}
+    </p>
+
+    <p>
+      <strong>Telefone do destinatário:</strong>
+      {{ recipient_phone }}
+    </p>
+  </section>
+
+  <!-- CESTA, ADICIONAIS E RESUMO FINANCEIRO -->
+  <section class="panel">
+    <h2>Cesta escolhida</h2>
+
+    <p>
+      <strong>{{ chosen_basket['name'] }}</strong>
+    </p>
+
+    <p>
+      {{ chosen_basket['description'] }}
+    </p>
+
+    <p>
+      <strong>Preço da cesta:</strong>
+      R$ {{ '%.2f'|format(chosen_basket['price'])|replace('.', ',') }}
+    </p>
+
+    {% if chosen_extras %}
+      <hr>
+
+      <h2>Adicionais selecionados</h2>
+
+      <ul>
+        {% for extra in chosen_extras %}
+          <li>
+            {{ extra['name'] }} —
+            R$ {{ '%.2f'|format(extra['price'])|replace('.', ',') }}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Nenhum adicional selecionado.</p>
+    {% endif %}
+
+    <hr>
+
+    <div class="subtotal">
+      <span>Subtotal dos produtos</span>
+      <strong>R$ {{ products_total }}</strong>
+    </div>
+
+    <div class="subtotal">
+      <span>Taxa de entrega</span>
+      <strong>R$ {{ freight }}</strong>
+    </div>
+
+    <hr>
+
+    <div class="subtotal">
+      <strong>Total do pedido</strong>
+      <strong>R$ {{ total }}</strong>
+    </div>
+  </section>
+
+  <!-- ENDEREÇO DE ENTREGA -->
+  <section class="panel">
+    <h2>Endereço de entrega</h2>
+
+    <p>
+      <strong>Rua ou avenida:</strong>
+      {{ street }}, {{ number }}
+    </p>
+
+    <p>
+      <strong>Complemento:</strong> {{ complement }}
+    </p>
+
+    <p>
+      <strong>Bairro:</strong> {{ neighborhood }}
+    </p>
+
+    <p>
+      <strong>Cidade:</strong> {{ city }}
+    </p>
+
+    <p>
+      <strong>CEP:</strong> {{ cep }}
+    </p>
+
+    <p>
+      <strong>Ponto de referência:</strong>
+      {{ reference_point }}
+    </p>
+  </section>
+
+  <!-- DATA E HORÁRIO DA ENTREGA -->
+  <section class="panel">
+    <h2>Data e horário da entrega</h2>
+
+    <p>
+      <strong>Data solicitada:</strong> {{ delivery_date }}
+    </p>
+
+    <p>
+      <strong>Horário preferencial:</strong> {{ preferred_time }}
+    </p>
+
+    <p class="footnote">
+      O horário informado é uma preferência e depende de confirmação
+      pelo ateliê. A data solicitada também deverá ser confirmada.
+    </p>
+  </section>
+
+  <!-- PAGAMENTO E CARTÃO -->
+  <section class="panel">
+    <h2>Forma de pagamento</h2>
+
+    <p>
+      <strong>Forma selecionada:</strong> {{ payment_method }}
+    </p>
+
+    <p class="footnote">
+      Essa seleção registra sua preferência de pagamento.
+      O pagamento não é processado por esta página; combine os detalhes
+      com o ateliê.
+    </p>
+
+    <hr>
+
+    <h2>Mensagem para o cartão</h2>
+
+    {% if card_message %}
+      <blockquote>
+        {{ card_message }}
+      </blockquote>
+    {% else %}
+      <p>Nenhuma mensagem personalizada informada.</p>
+    {% endif %}
+  </section>
+
+  <!-- WHATSAPP -->
+  <section class="panel">
+    <h2>Confirme os detalhes pelo WhatsApp</h2>
+
+    <p>
+      Seu pedido já foi registrado no sistema. Para encaminhar os dados
+      ao ateliê, clique no botão abaixo e depois toque em
+      <strong>Enviar</strong> no WhatsApp.
+    </p>
+
+    <div class="submit-area">
+      <a
+        class="primary"
+        href="{{ whatsapp_url }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="text-decoration: none;"
+      >
+        Encaminhar resumo pelo WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <a href="/" class="secondary-link">
+    Fazer outro pedido
+  </a>
+
+  <p class="footnote">
+    Obrigado por escolher o Ateliê de Cestas!
+  </p>
+
+</main>
+</body>
+</html>

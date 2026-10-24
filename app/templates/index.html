@@ -1,0 +1,459 @@
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ateliê de Cestas | Novo pedido</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<main class="app-shell">
+
+  <header class="hero">
+    <p class="eyebrow">ATELIÊ DE CESTAS</p>
+    <h1>Escolha sua cesta</h1>
+    <p>
+      Selecione uma cesta preparada pelo ateliê e personalize seu presente
+      se desejar.
+    </p>
+  </header>
+
+  {% if error %}
+    <div class="alert error" role="alert">{{ error }}</div>
+  {% endif %}
+
+  <form action="/orders" method="post" id="order-form">
+    <input type="hidden" name="order_type" value="ready">
+
+    <!-- 01: Cestas prontas -->
+    <section class="panel" id="ready-section" aria-labelledby="ready-title">
+      <div class="section-heading">
+        <span>01</span>
+        <div>
+          <h2 id="ready-title">Escolha sua cesta</h2>
+          <p>Confira as opções, os preços e o que vem em cada cesta.</p>
+        </div>
+      </div>
+
+      <div class="ready-baskets">
+        {% for basket in ready_baskets %}
+        <label class="ready-card">
+          <input
+            type="radio"
+            name="selected_basket"
+            value="{{ basket['id'] }}"
+            data-price="{{ '%.2f'|format(basket['price']) }}"
+            required
+          >
+
+          <span class="ready-image">
+            <img
+              src="/static/{{ basket['image'] }}"
+              alt="Cesta {{ basket['name'] }}"
+              loading="lazy"
+            >
+          </span>
+
+          <span class="ready-copy">
+            <strong>{{ basket['name'] }}</strong>
+            <small>{{ basket['description'] }}</small>
+
+            <details class="basket-details">
+              <summary>Ver o que vem na cesta</summary>
+              <ul class="basket-items">
+                {% for item in basket["items"] %}
+                <li>{{ item }}</li>
+                {% endfor %}
+              </ul>
+              <p class="basket-serves">{{ basket['serves'] }}</p>
+            </details>
+
+            <span class="price">
+              R$ {{ '%.2f'|format(basket['price']) }}
+            </span>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+
+      <p class="footnote">
+        A entrega não está incluída no preço da cesta. O valor será calculado
+        conforme a região de entrega.
+      </p>
+    </section>
+
+    <!-- 02: Personalização -->
+    <section class="panel" id="custom-section" aria-labelledby="custom-title">
+      <div class="section-heading">
+        <span>02</span>
+        <div>
+          <h2 id="custom-title">Personalize sua cesta</h2>
+          <p>Quer acrescentar algo especial ao seu presente?</p>
+        </div>
+      </div>
+
+      <div class="choice-list">
+        <label class="choice">
+          <input type="radio" name="wants_extras" value="yes" checked>
+          <span>
+            <strong>Sim, quero personalizar</strong>
+            <small>Escolha um ou mais adicionais abaixo.</small>
+          </span>
+        </label>
+
+        <label class="choice">
+          <input type="radio" name="wants_extras" value="no">
+          <span>
+            <strong>Não quero adicionais</strong>
+            <small>Ficarei somente com a cesta escolhida.</small>
+          </span>
+        </label>
+      </div>
+
+      <div id="extras-section">
+        <h3>Adicionais disponíveis</h3>
+        <p>Marque os itens que deseja acrescentar à sua cesta.</p>
+
+        <div class="products extras-list">
+          {% for extra in extras %}
+          <label class="product">
+            <input
+              type="checkbox"
+              name="selected_extras"
+              value="{{ extra['id'] }}"
+              data-price="{{ '%.2f'|format(extra['price']) }}"
+            >
+            <span class="product-copy">
+              <strong>{{ extra['name'] }}</strong>
+              <small>Adicional para personalizar seu presente.</small>
+            </span>
+            <span class="price">
+              R$ {{ '%.2f'|format(extra['price']) }}
+            </span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <!-- 03: Resumo do pedido e frete -->
+    <section class="panel" aria-label="Resumo do valor">
+      <div class="subtotal">
+        <span>Subtotal dos produtos</span>
+        <strong id="subtotal">R$ 0,00</strong>
+      </div>
+
+      <div class="subtotal">
+        <span>Frete estimado</span>
+        <strong id="freight-value">Calcule o frete</strong>
+      </div>
+
+      <div class="subtotal">
+        <span>Total com entrega</span>
+        <strong id="grand-total">R$ 0,00</strong>
+      </div>
+
+      <button type="button" class="primary" id="calculate-freight">
+        Calcular frete
+      </button>
+
+      <p class="footnote" id="freight-note" aria-live="polite">
+        Preencha o endereço para calcular o frete. Em Sarzedo, a taxa é fixa
+        em R$ 10,00. Nas demais cidades, o cálculo utiliza a distância de
+        carro de ida e volta, a R$ 3,00 por quilômetro.
+      </p>
+    </section>
+
+    <!-- 04: Dados de quem compra e de quem recebe -->
+    <section class="panel" aria-labelledby="people-title">
+      <div class="section-heading">
+        <span>04</span>
+        <div>
+          <h2 id="people-title">Dados do presente</h2>
+          <p>Conte para quem será enviado esse presente especial.</p>
+        </div>
+      </div>
+
+      <label class="field">
+        Nome de quem presenteia
+        <input
+          id="customer_name"
+          name="customer_name"
+          type="text"
+          maxlength="120"
+          autocomplete="name"
+          required
+          placeholder="Nome de quem está fazendo o pedido"
+        >
+      </label>
+
+      <label class="field">
+        WhatsApp de quem está fazendo o pedido
+        <input
+          id="whatsapp"
+          name="whatsapp"
+          type="tel"
+          inputmode="numeric"
+          maxlength="15"
+          autocomplete="tel"
+          required
+          placeholder="(31) 99999-9999"
+        >
+      </label>
+
+      <label class="field">
+        Nome de quem recebe a cesta
+        <input
+          id="recipient_name"
+          name="recipient_name"
+          type="text"
+          maxlength="120"
+          required
+          placeholder="Nome do presenteado"
+        >
+      </label>
+
+      <label class="field">
+        Telefone de contato de quem recebe
+        <input
+          id="recipient_phone"
+          name="recipient_phone"
+          type="tel"
+          inputmode="numeric"
+          maxlength="15"
+          required
+          placeholder="(31) 99999-9999"
+        >
+      </label>
+    </section>
+
+    <!-- 05: Endereço e entrega -->
+    <section class="panel" aria-labelledby="delivery-title">
+      <div class="section-heading">
+        <span>05</span>
+        <div>
+          <h2 id="delivery-title">Endereço e entrega</h2>
+          <p>Informe onde e quando a cesta deverá ser entregue.</p>
+        </div>
+      </div>
+
+      <label class="field">
+        CEP
+        <input
+          id="cep"
+          name="cep"
+          type="text"
+          inputmode="numeric"
+          maxlength="9"
+          autocomplete="postal-code"
+          required
+          placeholder="00000-000"
+        >
+        <small>Digite o CEP para consultar o endereço automaticamente.</small>
+      </label>
+
+      <label class="field">
+        Cidade
+        <input
+          id="city"
+          name="city"
+          type="text"
+          maxlength="100"
+          autocomplete="address-level2"
+          required
+          placeholder="Nome da cidade"
+        >
+      </label>
+
+      <label class="field">
+        Bairro
+        <input
+          id="neighborhood"
+          name="neighborhood"
+          type="text"
+          maxlength="120"
+          autocomplete="address-level3"
+          required
+          placeholder="Nome do bairro"
+        >
+      </label>
+
+      <label class="field">
+        Rua ou avenida
+        <input
+          id="street"
+          name="street"
+          type="text"
+          maxlength="160"
+          autocomplete="address-line1"
+          required
+          placeholder="Nome da rua ou avenida"
+        >
+      </label>
+
+      <label class="field">
+        Número
+        <input
+          id="number"
+          name="number"
+          type="text"
+          maxlength="20"
+          required
+          placeholder="Número do imóvel"
+        >
+      </label>
+
+      <label class="field">
+        Complemento
+        <input
+          id="complement"
+          name="complement"
+          type="text"
+          maxlength="120"
+          autocomplete="address-line2"
+          required
+          placeholder="Apartamento, bloco, casa..."
+        >
+      </label>
+
+      <label class="field">
+        Ponto de referência
+        <input
+          id="reference_point"
+          name="reference_point"
+          type="text"
+          maxlength="200"
+          required
+          placeholder="Ex.: próximo à praça ou ao supermercado"
+        >
+      </label>
+
+      <label class="field">
+        Data de entrega
+        <input
+          id="delivery_date"
+          name="delivery_date"
+          type="date"
+          min="{{ min_delivery }}"
+          required
+        >
+      </label>
+
+      <label class="field">
+        Horário de preferência para entrega
+        <input
+          id="preferred_time"
+          name="preferred_time"
+          type="text"
+          maxlength="100"
+          required
+          placeholder="Ex.: entre 14h e 16h"
+        >
+      </label>
+
+      <p class="footnote">
+        O horário informado é uma preferência e deverá ser confirmado pelo
+        ateliê.
+      </p>
+    </section>
+
+    <!-- 06: Mensagem do cartão -->
+    <section class="panel" aria-labelledby="card-message-title">
+      <div class="section-heading">
+        <span>06</span>
+        <div>
+          <h2 id="card-message-title">Mensagem para o cartão</h2>
+          <p>Escreva uma mensagem curta para acompanhar o presente.</p>
+        </div>
+      </div>
+
+      <label class="field">
+        Texto do cartão (opcional)
+        <textarea
+          id="card_message"
+          name="card_message"
+          maxlength="300"
+          rows="3"
+          placeholder="Ex.: Feliz aniversário! Que seu dia seja repleto de amor e alegria."
+        ></textarea>
+      </label>
+
+      <p class="footnote">
+        Você pode deixar esse campo em branco caso não queira incluir
+        uma mensagem personalizada.
+      </p>
+    </section>
+
+    <!-- 07: Forma de pagamento -->
+    <section class="panel" aria-labelledby="payment-title">
+      <div class="section-heading">
+        <span>07</span>
+        <div>
+          <h2 id="payment-title">Forma de pagamento</h2>
+          <p>Escolha como pretende realizar o pagamento.</p>
+        </div>
+      </div>
+
+      <div class="choice-list">
+        <label class="choice">
+          <input
+            type="radio"
+            name="payment_method"
+            value="Pix"
+            required
+          >
+          <span>
+            <strong>Pix</strong>
+            <small>Pagamento via Pix, conforme orientação do ateliê.</small>
+          </span>
+        </label>
+
+        <label class="choice">
+          <input
+            type="radio"
+            name="payment_method"
+            value="Cartão de débito"
+            required
+          >
+          <span>
+            <strong>Cartão de débito</strong>
+          </span>
+        </label>
+
+        <label class="choice">
+          <input
+            type="radio"
+            name="payment_method"
+            value="Cartão de crédito"
+            required
+          >
+          <span>
+            <strong>Cartão de crédito</strong>
+          </span>
+        </label>
+      </div>
+
+      <p class="footnote">
+        A seleção registra a preferência de pagamento. O pagamento não é
+        processado automaticamente por este formulário.
+      </p>
+    </section>
+
+    <!-- Envio do pedido -->
+    <div class="submit-area">
+      <button type="submit" class="primary">
+        Confirmar pedido
+      </button>
+    </div>
+  </form>
+
+  <p class="footnote">
+    Confira os dados antes de confirmar seu pedido.
+  </p>
+
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
